@@ -1,0 +1,78 @@
+.form-submit-btn{
+    margin-top: 1rem;
+}
+
+.navigationbar {
+    display: flex;
+    align-items: center;
+    height: max-content;
+}
+
+.welcome-jumbo{
+      height: 60vh;
+}
+
+#student-menu-jumbo{
+    background-color: lightblue;
+}
+
+#teacher-menu-jumbo{
+    background-color: lightblue;
+}
+
+.list-group-flush{
+    font-size: larger;
+}
+
+.student-content{
+    height: 100vh;
+}
+
+.student-aside{
+    display: flex;
+    justify-content: flex-start;
+
+    background-color: white;
+}
+
+.student-main{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background-color: green;
+}
+
+.student-courses{
+    margin-top: 1rem;
+    padding-left: 2rem;
+    padding-right: 2rem;    
+    width: inherit;
+
+    border-right: 1px solid lightgray;
+}
+
+.student-alert-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.student-alert{
+    margin-bottom: 0;
+    margin-top: 1rem;
+    max-width: fit-content;
+}
+
+.student-course{
+    display: flex;
+    justify-content: center;
+}
+
+#scrollable-checkboxes {
+    overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
+    align-items: baseline;
+    border: 1px solid lightgray;
+}
