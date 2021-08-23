@@ -153,6 +153,22 @@ exports.getTodayHelpMisurazioni = function (iid, data) {
   });
 };
 
+/* Ritorna le misurazioni con aiuto da fare */
+exports.getAllHelpMisurazioni = function (iid) {
+  return new Promise((resolve, reject) => {
+    const sql =
+      "SELECT * FROM Misurazioni WHERE aiuto = 1 AND mid IN (SELECT mid FROM MedicoInfermiere WHERE iid = ?)";
+    db.all(sql, [iid], (err, rows) => {
+      if (err) reject(err);
+      else if (rows.length === 0) resolve(undefined);
+      else {
+        const mis = rows.map((row) => createMisurazione(row));
+        resolve(mis);
+      }
+    });
+  });
+};
+
 /* 
 // Dato l'ID del paziente e del medico, ritorna la lista delle misurazioni a loro legate 
 exports.getMisurazioniByPazienteMedico= function (pid, mid) {
@@ -177,6 +193,22 @@ exports.getMisurazioniByPaziente = function (pid) {
   return new Promise((resolve, reject) => {
     const sql =
       "SELECT * FROM Misurazioni WHERE pid = ? AND timestamp_fatto IS NULL";
+    db.all(sql, [pid], (err, rows) => {
+      if (err) reject(err);
+      else if (rows.length === 0) resolve(undefined);
+      else {
+        const misurazioni = rows.map((row) => createMisurazione(row));
+        resolve(misurazioni);
+      }
+    });
+  });
+};
+
+// Dato l'ID del paziente, ritorna la lista delle sue misurazioni
+exports.getAllMisurazioniByPaziente = function (pid) {
+  return new Promise((resolve, reject) => {
+    const sql =
+      "SELECT * FROM Misurazioni WHERE pid = ?";
     db.all(sql, [pid], (err, rows) => {
       if (err) reject(err);
       else if (rows.length === 0) resolve(undefined);

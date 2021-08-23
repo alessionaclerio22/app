@@ -36,16 +36,19 @@ class JumboNote extends React.Component {
   };
 
   deleteNota = (i) => {
-    let vis = this.props.note[i];
-    API.deleteNota(vis)
+    let nota = this.props.note[i];
+    this.props.deleteN(i);
+    API.deleteNota(nota)
       .then()
       .catch((errorObj) => {
         console.error(errorObj);
       });
   };
 
-  editNota = (nota) => {
+  editNota = (nota, index) => {
     nota.testo = this.state.testo;
+    this.props.editN(nota, index);
+    console.log(nota);
     API.editNota(nota.pid, nota)
       .then()
       .catch((errorObj) => {
@@ -66,6 +69,7 @@ class JumboNote extends React.Component {
     };
 
     if (n.testo !== "") {
+      this.props.addN(n);
       this.closeModal();
       API.addNota(n, this.props.pid)
         .then()
@@ -116,31 +120,24 @@ class JumboNote extends React.Component {
 
   render() {
     return (
-      <Jumbotron style={{ marginTop: "5vh", marginBottom: "5vh" }}>
-        <Row>
-          <Col></Col>
-          <Col>
-            <h2>Note</h2>
-          </Col>
-          <Col>
-            <Button
-              style={{ borderRadius: "50%" }}
-              variant="outline-success"
-              onClick={this.openModal}
-            >
-              <BsPlus style={{ marginBottom: "0.5vh" }} />
-            </Button>
-            <this.modalNota />
-          </Col>
-        </Row>
+      <Jumbotron style={{ marginTop: "1rem", marginBottom: "1rem" }}>
+        <h2>Note</h2>
+        <Button
+          style={{ borderRadius: "50%" }}
+          variant="outline-success"
+          onClick={this.openModal}
+        >
+          <BsPlus style={{ marginBottom: "0.33rem" }} />
+        </Button>
+        <this.modalNota />
 
         {this.props.note.length !== 0 && (
-          <Jumbotron className="jt" class="overflow-scroll">
+          <Jumbotron className="jt-3" class="overflow-scroll">
             <Accordion>
               {this.props.note.map((n, i) => (
                 <Card>
                   <Card.Header>
-                    <Row>
+                    <Row className="custom-row">
                       <Col>
                         <Accordion.Toggle
                           as={Button}
@@ -160,52 +157,8 @@ class JumboNote extends React.Component {
                             this.setState({ index: i });
                           }}
                         >
-                          <BsPencil style={{ marginBottom: "0.5vh" }} />
+                          <BsPencil style={{ marginBottom: "0.33rem" }} />
                         </Button>
-
-                        <Modal
-                          show={this.state.isOpenEdit}
-                          onHide={this.closeEditModal}
-                          height="75vh"
-                          aria-labelledby="contained-modal-title-vcenter"
-                          centered
-                        >
-                          <Modal.Header closeButton>
-                            <Modal.Title id="contained-modal-title-vcenter">
-                              Modifica nota
-                            </Modal.Title>
-                          </Modal.Header>
-                          <Modal.Body>
-                            <Form
-                              onSubmit={() => {
-                                this.editNota(
-                                  this.props.note[this.state.index]
-                                );
-                              }}
-                            >
-                              <Form.Label>Testo della Nota</Form.Label>
-                              <Form.Control
-                                as="textarea"
-                                rows="10"
-                                name="testo"
-                                type="text"
-                                placeholder="Testo"
-                                defaultValue={
-                                  this.props.note[this.state.index].testo
-                                }
-                                onChange={this.handleChange}
-                                required
-                              />
-                              <Button
-                                className="form-submit-btn"
-                                variant="primary"
-                                type="submit"
-                              >
-                                Conferma
-                              </Button>
-                            </Form>
-                          </Modal.Body>
-                        </Modal>
                       </Col>
                       <Col>
                         <Button
@@ -213,7 +166,7 @@ class JumboNote extends React.Component {
                           style={{ borderRadius: "50%" }}
                           onClick={() => this.deleteNota(i)}
                         >
-                          <BsX style={{ marginBottom: "0.5vh" }} />
+                          <BsX style={{ marginBottom: "0.33rem" }} />
                         </Button>
                       </Col>
                     </Row>
@@ -223,12 +176,53 @@ class JumboNote extends React.Component {
                   </Accordion.Collapse>
                 </Card>
               ))}
+
+              <Modal
+                show={this.state.isOpenEdit}
+                onHide={this.closeEditModal}
+                height="75vh"
+                aria-labelledby="contained-modal-title-vcenter"
+                centered
+              >
+                <Modal.Header closeButton>
+                  <Modal.Title id="contained-modal-title-vcenter">
+                    Modifica nota
+                  </Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  <Form>
+                    <Form.Label>Testo della Nota</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows="10"
+                      name="testo"
+                      type="text"
+                      placeholder="Testo"
+                      defaultValue={this.props.note[this.state.index].testo}
+                      onChange={this.handleChange}
+                      required
+                    />
+                    <Button
+                      variant="primary"
+                      type="button"
+                      onClick={() => {
+                        this.editNota(
+                          this.props.note[this.state.index],
+                          this.state.index
+                        );
+                      }}
+                    >
+                      Conferma
+                    </Button>
+                  </Form>
+                </Modal.Body>
+              </Modal>
             </Accordion>
           </Jumbotron>
         )}
 
         {this.props.note.length === 0 && (
-          <Alert variant="info" style={{ marginTop: "6vh" }}>
+          <Alert variant="info" style={{ marginTop: "1rem" }}>
             Non ci sono note
           </Alert>
         )}

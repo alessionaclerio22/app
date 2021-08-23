@@ -35,7 +35,7 @@ class LoginForm extends React.Component {
         {(context) => (
           <>
             <Container fluid>
-              <Row style={{ height: "50vh" }}>
+              <Row className="custom-row">
                 <Col>
                   <Form
                     method="POST"
@@ -68,8 +68,8 @@ class LoginForm extends React.Component {
                       />
                     </Form.Group>
 
-                    <Button variant="primary" type="submit">
-                      Login
+                    <Button variant="primary" type="submit" size="lg">
+                      Accedi
                     </Button>
                   </Form>
 

@@ -35,7 +35,7 @@ exports.addMedico = function (s) {
         s.cognome,
         s.data_nascita,
         s.sede_ambulatorio,
-        s.specializzazione,
+        s.spec,
         s.telefono,
         s.mail,
         s.foto,
@@ -68,7 +68,7 @@ exports.editMedico = function (s) {
         s.cognome,
         s.data_nascita,
         s.sede_ambulatorio,
-        s.specializzazione,
+        s.spec,
         s.telefono,
         s.mail,
         s.ordine,
@@ -161,7 +161,7 @@ exports.checkPassword = function (user, password) {
   return password === user.hash;
 };
 
-/* 
+
 //Ritorna la lista di tutti i medici 
 exports.getAllMedici = function () {
     return new Promise((resolve, reject) => {
@@ -177,4 +177,4 @@ exports.getAllMedici = function () {
             }
         })
     })
-} */
+} 

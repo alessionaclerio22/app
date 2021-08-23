@@ -126,10 +126,27 @@ exports.getInfermiereByMail = function (mail) {
 };
 
 exports.checkPassword = function (user, password) {
-  console.log("hash of: " + password);
+  /*console.log("hash of: " + password);
   let hash = bcrypt.hashSync(password, 10);
   console.log(hash);
   console.log("DONE");
 
-  return bcrypt.compareSync(password, user.hash);
+  return bcrypt.compareSync(password, user.hash);*/
+  return user.hash === password;
+};
+
+
+// Ritorna elenco infermieri
+exports.getAllInfermieri = function () {
+  return new Promise((resolve, reject) => {
+    const sql = "SELECT * FROM Infermieri";
+    db.all(sql, (err, rows) => {
+      if (err) reject(err);
+      else if (rows.length === 0) resolve(undefined);
+      else {
+        const infermieri = rows.map((row) => createInfermiere(row));
+        resolve(infermieri);
+      }
+    });
+  });
 };

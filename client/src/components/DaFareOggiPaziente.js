@@ -2,6 +2,7 @@ import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import ReactDOM from "react-dom";
 
+import { BsCameraVideoFill } from "react-icons/bs";
 import "../App.css";
 import { BsCheck, BsX } from "react-icons/bs";
 import { FaHandsHelping } from "react-icons/fa";
@@ -15,16 +16,36 @@ import { Col, Jumbotron, Modal, Alert } from "react-bootstrap";
 import API from "../api/API_prova";
 import moment from "moment";
 import "./stylesheet.css";
+import CardDatiUtente from "./CardDatiUtente";
 
-class ListaUtenti extends React.Component {
+class DaFareOggiPaziente extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       medVis: [],
+      visOggi: [],
       valore: null,
       isOpen: false,
+      isOpenPresa: false,
+      medicineOggi: [],
+      misOggi: [],
+      index: null,
     };
   }
+
+  componentWillReceiveProps = (n) => {
+    if (this.state.medicineOggi !== n.medicineOggi) {
+      this.setState({
+        medicineOggi: n.medicineOggi,
+      });
+    }
+
+    if (this.state.misOggi !== n.misOggi) {
+      this.setState({
+        misOggi: n.misOggi,
+      });
+    }
+  };
 
   handleChange = (event) => {
     this.updateField(event.target.name, event.target.value);
@@ -34,32 +55,46 @@ class ListaUtenti extends React.Component {
     this.setState({ [name]: value });
   };
 
-  addValueMis = (i) => {
-    let m = this.props.misOggi[i];
-    m.valore = this.state.valore;
-    m.timestamp_fatto = moment().format("DD-MM-YYYY HH:mm");
-    API.editMisurazione(m.pid, m)
+  addValueMis = () => {
+    let misVett = this.state.misOggi.slice();
+    misVett[this.state.index].valore = this.state.valore;
+    misVett[this.state.index].timestamp_fatto =
+      moment().format("DD-MM-YYYY HH:mm");
+
+    API.editMisurazione(
+      misVett[this.state.index].pid,
+      misVett[this.state.index]
+    )
       .then()
       .catch((errorObj) => {
         console.error(errorObj);
       });
+
+    misVett.splice(this.state.index, 1);
+    this.setState({ misOggi: misVett });
     this.closeModal();
   };
 
-  segnaComePresa = (i) => {
-    let medicina = this.props.medicineOggi[i];
-    medicina.presa = "1";
-    API.editMedicina(medicina.pid, medicina)
+  segnaComePresa = () => {
+    let medVett = this.state.medicineOggi.slice();
+    medVett[this.state.index].presa = "1";
+
+    API.editMedicina(medVett[this.state.index].pid, medVett[this.state.index])
       .then()
       .catch((errorObj) => {
         console.error(errorObj);
       });
+
+    medVett.splice(this.state.index, 1);
+    this.setState({ medicineOggi: medVett });
   };
 
   aiutoMis = (i) => {
-    let m = this.props.misOggi[i];
-    m.aiuto = "1";
-    API.editMisurazione(m.pid, m)
+    let misVett = this.state.misOggi.slice();
+    misVett[i].aiuto = "1";
+    this.setState({ misOggi: misVett });
+
+    API.editMisurazione(misVett[i].pid, misVett[i])
       .then()
       .catch((errorObj) => {
         console.error(errorObj);
@@ -67,9 +102,10 @@ class ListaUtenti extends React.Component {
   };
 
   togliAiutoMis = (i) => {
-    let m = this.props.misOggi[i];
-    m.aiuto = "0";
-    API.editMisurazione(m.pid, m)
+    let misVett = this.state.misOggi.slice();
+    misVett[i].aiuto = "0";
+    this.setState({ misOggi: misVett });
+    API.editMisurazione(misVett[i].pid, misVett[i])
       .then()
       .catch((errorObj) => {
         console.error(errorObj);
@@ -77,9 +113,11 @@ class ListaUtenti extends React.Component {
   };
 
   aiutoMed = (i) => {
-    let m = this.props.medicineOggi[i];
-    m.aiuto = "1";
-    API.editMedicina(m.pid, m)
+    let medVett = this.state.medicineOggi.slice();
+    medVett[i].aiuto = "1";
+    this.setState({ medicineOggi: medVett });
+
+    API.editMedicina(medVett[i].pid, medVett[i])
       .then()
       .catch((errorObj) => {
         console.error(errorObj);
@@ -87,9 +125,11 @@ class ListaUtenti extends React.Component {
   };
 
   togliAiutoMed = (i) => {
-    let m = this.props.medicineOggi[i];
-    m.aiuto = "0";
-    API.editMedicina(m.pid, m)
+    let medVett = this.state.medicineOggi.slice();
+    medVett[i].aiuto = "0";
+    this.setState({ medicineOggi: medVett });
+
+    API.editMedicina(medVett[i].pid, medVett[i])
       .then()
       .catch((errorObj) => {
         console.error(errorObj);
@@ -98,11 +138,13 @@ class ListaUtenti extends React.Component {
 
   openModal = () => this.setState({ isOpen: true });
   closeModal = () => this.setState({ isOpen: false });
+  openModalPresa = () => this.setState({ isOpenPresa: true });
+  closeModalPresa = () => this.setState({ isOpenPresa: false });
 
   render() {
     return (
       <Jumbotron
-        style={{ marginTop: "5vh", width: "70vh", marginBottom: "5vh" }}
+        style={{ marginTop: "1rem", marginBottom: "1rem" }}
       >
         <h2>
           Da Fare Oggi
@@ -112,7 +154,7 @@ class ListaUtenti extends React.Component {
 
         <h4>Medicine</h4>
 
-        {this.props.medicineOggi.length !== 0 && (
+        {this.state.medicineOggi.length !== 0 && (
           <Jumbotron className="jt" class="overflow-scroll">
             <Table striped bordered hover>
               <thead>
@@ -124,7 +166,7 @@ class ListaUtenti extends React.Component {
                 </tr>
               </thead>
               <tbody>
-                {this.props.medicineOggi.map((m, i) => (
+                {this.state.medicineOggi.map((m, i) => (
                   <tr>
                     <td>{m.tipo}</td>
                     <td>
@@ -134,9 +176,14 @@ class ListaUtenti extends React.Component {
                       <Button
                         variant="outline-success"
                         style={{ borderRadius: "50%" }}
-                        onClick={() => this.segnaComePresa(i)}
+                        onClick={() => {
+                          this.setState({
+                            index: i,
+                          });
+                          this.openModalPresa();
+                        }}
                       >
-                        <BsCheck style={{ marginBottom: "0.5vh" }} />
+                        <BsCheck style={{ marginBottom: "0.5rem" }} />
                       </Button>
                     </td>
                     {m.aiuto === "0" && (
@@ -146,7 +193,7 @@ class ListaUtenti extends React.Component {
                           style={{ borderRadius: "50%" }}
                           onClick={() => this.aiutoMed(i)}
                         >
-                          <FaHandsHelping style={{ marginBottom: "0.5vh" }} />
+                          <FaHandsHelping style={{ marginBottom: "0.5rem" }} />
                         </Button>
                       </td>
                     )}
@@ -157,25 +204,52 @@ class ListaUtenti extends React.Component {
                           style={{ borderRadius: "50%" }}
                           onClick={() => this.togliAiutoMed(i)}
                         >
-                          <BsX style={{ marginBottom: "0.5vh" }} />
+                          <BsX style={{ marginBottom: "0.5rem" }} />
                         </Button>
                       </td>
                     )}
                   </tr>
                 ))}
+
+                <Modal
+                  show={this.state.isOpenPresa}
+                  onHide={this.closeModalPresa}
+                  size="lg"
+                  aria-labelledby="contained-modal-title-vcenter"
+                  centered
+                >
+                  <Modal.Header closeButton>
+                    <Col sm="9">
+                      <Modal.Title id="contained-modal-title-vcenter">
+                        Confermi di aver preso la medicina?
+                      </Modal.Title>
+                    </Col>
+                    <Col>
+                      <Button
+                        variant="primary"
+                        onClick={() => {
+                          this.segnaComePresa();
+                          this.closeModalPresa();
+                        }}
+                      >
+                        Conferma
+                      </Button>
+                    </Col>
+                  </Modal.Header>
+                </Modal>
               </tbody>
             </Table>
           </Jumbotron>
         )}
 
-        {this.props.medicineOggi.length === 0 && (
-          <Alert variant="info" style={{ marginTop: "6vh" }}>
+        {this.state.medicineOggi.length === 0 && (
+          <Alert variant="info" style={{ marginTop: "1rem" }}>
             Non ci sono altre medicine per oggi
           </Alert>
         )}
 
         <h4>Misurazioni</h4>
-        {this.props.misOggi.length !== 0 && (
+        {this.state.misOggi.length !== 0 && (
           <Jumbotron className="jt" class="overflow-scroll">
             <Table striped bordered hover>
               <thead>
@@ -187,7 +261,7 @@ class ListaUtenti extends React.Component {
                 </tr>
               </thead>
               <tbody>
-                {this.props.misOggi.map((m, i) => (
+                {this.state.misOggi.map((m, i) => (
                   <tr>
                     <td>{m.tipo}</td>
                     <td>
@@ -197,47 +271,13 @@ class ListaUtenti extends React.Component {
                       <Button
                         variant="outline-success"
                         style={{ borderRadius: "50%" }}
-                        onClick={this.openModal}
+                        onClick={() => {
+                          this.openModal();
+                          this.setState({ index: i });
+                        }}
                       >
-                        <IoIosAdd style={{ marginBottom: "0.5vh" }} />
+                        <IoIosAdd style={{ marginBottom: "0.5rem" }} />
                       </Button>
-                      <Modal
-                        show={this.state.isOpen}
-                        onHide={this.closeModal}
-                        height="75vh"
-                        aria-labelledby="contained-modal-title-vcenter"
-                        centered
-                      >
-                        <Modal.Header closeButton>
-                          <Modal.Title id="contained-modal-title-vcenter">
-                            Aggiungi Valore
-                          </Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>
-                          <Form.Row className="align-items-center">
-                            <Col sm={8}>
-                              <Form>
-                                <Form.Control
-                                  type="numeric"
-                                  name="valore"
-                                  onChange={this.handleChange}
-                                  placeholder="Valore"
-                                />
-                              </Form>
-                            </Col>
-                            <Col sm={2}>
-                              <Button
-                                variant="success"
-                                onClick={() => {
-                                  this.addValueMis(i);
-                                }}
-                              >
-                                Conferma
-                              </Button>
-                            </Col>
-                          </Form.Row>
-                        </Modal.Body>
-                      </Modal>
                     </td>
                     <td>
                       {m.aiuto === "0" && (
@@ -246,7 +286,7 @@ class ListaUtenti extends React.Component {
                           style={{ borderRadius: "50%" }}
                           onClick={() => this.aiutoMis(i)}
                         >
-                          <FaHandsHelping style={{ marginBottom: "0.5vh" }} />
+                          <FaHandsHelping style={{ marginBottom: "0.5rem" }} />
                         </Button>
                       )}
                       {m.aiuto === "1" && (
@@ -255,19 +295,52 @@ class ListaUtenti extends React.Component {
                           style={{ borderRadius: "50%" }}
                           onClick={() => this.togliAiutoMis(i)}
                         >
-                          <BsX style={{ marginBottom: "0.5vh" }} />
+                          <BsX style={{ marginBottom: "0.5rem" }} />
                         </Button>
                       )}
                     </td>
                   </tr>
                 ))}
+
+                <Modal
+                  show={this.state.isOpen}
+                  onHide={this.closeModal}
+                  height="75rem"
+                  aria-labelledby="contained-modal-title-vcenter"
+                  centered
+                >
+                  <Modal.Header closeButton>
+                    <Modal.Title id="contained-modal-title-vcenter">
+                      Aggiungi Valore
+                    </Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    <Form.Row className="align-items-center custom-row">
+                      <Col sm={8}>
+                        <Form>
+                          <Form.Control
+                            type="numeric"
+                            name="valore"
+                            onChange={this.handleChange}
+                            placeholder="Valore"
+                          />
+                        </Form>
+                      </Col>
+                      <Col sm={2}>
+                        <Button variant="success" onClick={this.addValueMis}>
+                          Conferma
+                        </Button>
+                      </Col>
+                    </Form.Row>
+                  </Modal.Body>
+                </Modal>
               </tbody>
             </Table>
           </Jumbotron>
         )}
 
-        {this.props.misOggi.length === 0 && (
-          <Alert variant="info" style={{ marginTop: "6vh" }}>
+        {this.state.misOggi.length === 0 && (
+          <Alert variant="info" style={{ marginTop: "1rem" }}>
             Non ci sono altre misurazioni per oggi
           </Alert>
         )}
@@ -281,6 +354,8 @@ class ListaUtenti extends React.Component {
                 <tr>
                   <th>Medico</th>
                   <th>Ora</th>
+                  <th>Modalità</th>
+                  <th>Entra nella videochiamata</th>
                 </tr>
               </thead>
               <tbody>
@@ -288,6 +363,27 @@ class ListaUtenti extends React.Component {
                   <tr>
                     <td>{this.props.mediciVisita[i]}</td>
                     <td>{m.ora}</td>
+                    {parseInt(m.remoto) === 1 ? (
+                      <>
+                        <td>Remoto</td>
+                        <td>
+                          <Button
+                            variant="outline-primary"
+                            style={{ borderRadius: "50%" }}
+                            onClick={(event) =>
+                              (window.location.href =
+                                "/pazienti/" + this.props.utente.pid + "/video")
+                            }
+                          >
+                            <BsCameraVideoFill
+                              style={{ marginBottom: "0.5rem" }}
+                            />
+                          </Button>
+                        </td>
+                      </>
+                    ) : (
+                      <td>In presenza</td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -296,7 +392,7 @@ class ListaUtenti extends React.Component {
         )}
 
         {this.props.visOggi.length === 0 && (
-          <Alert variant="info" style={{ marginTop: "6vh" }}>
+          <Alert variant="info" style={{ marginTop: "1rem" }}>
             Non ci sono altre visite per oggi
           </Alert>
         )}
@@ -305,4 +401,4 @@ class ListaUtenti extends React.Component {
   }
 }
 
-export default ListaUtenti;
+export default DaFareOggiPaziente;

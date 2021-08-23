@@ -1,5 +1,5 @@
 class Visita {
-  constructor(mid, pid, data, ora, fatto, delega) {
+  constructor(mid, pid, data, ora, fatto, delega, remoto, note) {
     if (mid) this.mid = mid;
 
     if (pid) this.pid = pid;
@@ -11,6 +11,10 @@ class Visita {
     if (fatto) this.fatto = fatto;
 
     if (delega) this.delega = delega;
+
+    if (remoto) this.remoto = remoto;
+    
+    if (note) this.note = note;
   }
 }
 

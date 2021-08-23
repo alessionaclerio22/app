@@ -15,6 +15,7 @@ class JumboMis extends React.Component {
     isOpenGraph: false,
     elencoMis: [],
     valoriMis: [],
+    tipo: null,
   };
 
   modalMis = () => {
@@ -32,22 +33,30 @@ class JumboMis extends React.Component {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Table striped bordered hover>
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th>Valore</th>
-              </tr>
-            </thead>
-            <tbody>
-              {this.state.elencoMis.map((m) => (
+          {this.state.elencoMis.length !== 0 && (
+            <Table striped bordered hover>
+              <thead>
                 <tr>
-                  <td>{m.timestamp_fatto}</td>
-                  <td>{m.valore}</td>
+                  <th>Data</th>
+                  <th>Valore</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
+              </thead>
+              <tbody>
+                {this.state.elencoMis.map((m) => (
+                  <tr>
+                    <td>{m.timestamp_fatto}</td>
+                    <td>{m.valore}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          )}
+          {this.state.elencoMis.length === 0 && (
+            <Alert variant="info" style={{ marginTop: "3vh" }}>
+              Al momento c'è nessuna misurazione eseguita per il tipo
+              selezionato
+            </Alert>
+          )}
         </Modal.Body>
       </Modal>
     );
@@ -63,10 +72,7 @@ class JumboMis extends React.Component {
       .then((vettMis) => {
         this.setState({ elencoMis: vettMis });
         let vett = [];
-        vett.push([{ type: "date", label: "Giorno" }, tipo]);
         vettMis.map((m) => {
-          console.log(m.timestamp_fatto.substring(11, 13));
-          console.log(m.timestamp_fatto.substring(14, 16));
           vett.push([
             new Date(
               m.timestamp_fatto.substring(6, 10),
@@ -78,15 +84,21 @@ class JumboMis extends React.Component {
             parseInt(m.valore),
           ]);
         });
-        console.log(vett);
-        this.setState({ valoriMis: vett });
+        let vetSorted = vett.sort((a, b) => a[0] - b[0]);
+        let finalVet = [];
+        finalVet.push([{ type: "date", label: "Giorno" }, tipo]);
+
+        for (let i = 0; i < vetSorted.length; i++) {
+          finalVet.push(vetSorted[i]);
+        }
+        this.setState({ valoriMis: finalVet });
       })
       .catch((errorObj) => console.error(errorObj));
   };
 
   render() {
     return (
-      <Jumbotron style={{ marginTop: "5vh", marginBottom: "5vh" }}>
+      <Jumbotron style={{ marginTop: "1rem", marginBottom: "1rem" }}>
         <h2>Misurazioni</h2>
 
         {this.props.tipiMis.length !== 0 && (
@@ -116,10 +128,9 @@ class JumboMis extends React.Component {
                         }}
                       >
                         <AiOutlineUnorderedList
-                          style={{ marginBottom: "0.5vh" }}
+                          style={{ marginBottom: "0.5rem" }}
                         />
                       </Button>
-                      <this.modalMis />
                     </td>
                     <td>
                       <Button
@@ -131,64 +142,79 @@ class JumboMis extends React.Component {
                             this.props.pid,
                             t.substring(1, t.length - 1)
                           );
+                          this.setState({ tipo: t });
                         }}
                       >
-                        <AiOutlineLineChart style={{ marginBottom: "0.5vh" }} />
+                        <AiOutlineLineChart style={{ marginBottom: "0.5rem" }} />
                       </Button>
-
-                      <Modal
-                        show={this.state.isOpenGraph}
-                        onHide={this.closeModalGraph}
-                        height="75vh"
-                        size="xl"
-                        aria-labelledby="contained-modal-title-vcenter"
-                        centered
-                      >
-                        <Modal.Header closeButton>
-                          <Modal.Title id="contained-modal-title-vcenter">
-                            Grafico Misurazioni
-                          </Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>
-                          <Chart
-                            width={"100%"}
-                            height={"500"}
-                            chartType="Line"
-                            loader={<div>Loading Chart</div>}
-                            data={this.state.valoriMis}
-                            options={{
-                              chart: {
-                                title:
-                                  "Andamento nel tempo di " +
-                                  t.substring(1, t.length - 1),
-                              },
-                              width: 900,
-                              height: 500,
-                              series: {
-                                // Gives each series an axis name that matches the Y-axis below.
-                                0: { axis: "val" },
-                              },
-                              axes: {
-                                // Adds labels to each axis; they don't have to match the axis names.
-                                y: {
-                                  val: { label: "Valore" },
-                                },
-                              },
-                            }}
-                            rootProps={{ "data-testid": "4" }}
-                          />
-                        </Modal.Body>
-                      </Modal>
                     </td>
                   </tr>
                 ))}
+
+                <this.modalMis />
+
+                <Modal
+                  show={this.state.isOpenGraph}
+                  onHide={this.closeModalGraph}
+                  height="75vh"
+                  size="xl"
+                  aria-labelledby="contained-modal-title-vcenter"
+                  centered
+                >
+                  <Modal.Header closeButton>
+                    <Modal.Title id="contained-modal-title-vcenter">
+                      Grafico Misurazioni
+                    </Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    {this.state.elencoMis.length !== 0 && (
+                      <Chart
+                        width={"100%"}
+                        height={"500"}
+                        chartType="Line"
+                        loader={<div>Loading Chart</div>}
+                        data={this.state.valoriMis}
+                        options={{
+                          chart: {
+                            title:
+                              "Andamento nel tempo di " +
+                              this.state.tipo.substring(
+                                1,
+                                this.state.tipo.length - 1
+                              ),
+                          },
+                          width: 900,
+                          height: 500,
+                          series: {
+                            // Gives each series an axis name that matches the Y-axis below.
+                            0: { axis: "val" },
+                          },
+                          axes: {
+                            // Adds labels to each axis; they don't have to match the axis names.
+                            y: {
+                              val: { label: "Valore" },
+                            },
+                          },
+                        }}
+                        rootProps={{ "data-testid": "4" }}
+                      />
+                    )}
+
+                    {this.state.elencoMis.length === 0 && (
+                      <Alert variant="info" style={{ marginTop: "1rem" }}>
+                        Al momento c'è nessuna misurazione eseguita per il tipo
+                        selezionato
+                      </Alert>
+                    )}
+                  </Modal.Body>
+                </Modal>
               </tbody>
             </Table>
           </Jumbotron>
         )}
 
         {this.props.tipiMis.length === 0 && (
-          <Alert variant="info" style={{ marginTop: "6vh" }}>
+          <Alert variant="info" style={{ marginTop: "1rem" }}>
             Non ci sono misurazioni effettuate
           </Alert>
         )}

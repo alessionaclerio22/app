@@ -11,7 +11,9 @@ const createVisita = function (row) {
     row["data"],
     row["ora"],
     row["fatto"],
-    row["delega"]
+    row["delega"],
+    row["remoto"],
+    row["note"],
   );
 };
 
@@ -19,10 +21,10 @@ const createVisita = function (row) {
 exports.addVisita = function (s) {
   return new Promise((resolve, reject) => {
     const sql =
-      "INSERT INTO Visite(mid, pid, data, ora, fatto, delega) VALUES(?, ?, ?, ?, ?, ?)";
+      "INSERT INTO Visite(mid, pid, data, ora, fatto, delega, remoto, note) VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
     db.run(
       sql,
-      [s.mid, s.pid, s.data, s.ora, s.fatto, s.delega],
+      [s.mid, s.pid, s.data, s.ora, s.fatto, s.delega, s.remoto, s.note],
       function (err) {
         if (err) {
           console.log(err);
@@ -96,14 +98,14 @@ exports.getVisiteByMedicoData = function (mid, data) {
 };
 
 /* Modifica i parametri di una visita */
-exports.editVisita = function (newData, newOra, newDelega, s) {
+exports.editVisita = function (newData, newOra, newDelega, newRemoto, newNote, s) {
   return new Promise((resolve, reject) => {
     const sql =
-      "UPDATE Visite SET fatto = ?, delega = ?, data = ?, ora = ? WHERE pid = ? AND mid = ? AND data=? AND ora=?";
+      "UPDATE Visite SET fatto = ?, delega = ?, data = ?, ora = ?, remoto = ?, note = ? WHERE pid = ? AND mid = ? AND data=? AND ora=?";
 
     db.run(
       sql,
-      [s.fatto, newDelega, newData, newOra, s.pid, s.mid, s.data, s.ora],
+      [s.fatto, newDelega, newData, newOra, newRemoto, newNote, s.pid, s.mid, s.data, s.ora],
       function (err) {
         if (err) {
           console.log(err);
@@ -122,6 +124,22 @@ exports.getVisiteDelegaToday = function (iid, data) {
     const sql =
       "SELECT * FROM Visite WHERE mid IN (SELECT mid FROM MedicoInfermiere WHERE iid = ?) AND data = ? AND fatto = 0 AND delega = 1";
     db.all(sql, [iid, data], (err, rows) => {
+      if (err) reject(err);
+      else if (rows.length === 0) resolve(undefined);
+      else {
+        const visite = rows.map((row) => createVisita(row));
+        resolve(visite);
+      }
+    });
+  });
+};
+
+/* Ritorna le visite con delega da fare di tutti i pazienti associati al medico dell'infermiere */
+exports.getAllVisiteDelega = function (iid) {
+  return new Promise((resolve, reject) => {
+    const sql =
+      "SELECT * FROM Visite WHERE mid IN (SELECT mid FROM MedicoInfermiere WHERE iid = ?) AND delega = 1";
+    db.all(sql, [iid], (err, rows) => {
       if (err) reject(err);
       else if (rows.length === 0) resolve(undefined);
       else {

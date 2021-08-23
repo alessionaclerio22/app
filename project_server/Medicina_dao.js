@@ -118,10 +118,41 @@ exports.getTodayHelpMedicine = function (iid, data) {
   });
 };
 
+/* Ritorna le medicine con aiuto da fare */
+exports.getAllHelpMedicine = function (iid) {
+  return new Promise((resolve, reject) => {
+    const sql =
+      "SELECT * FROM Medicine WHERE aiuto = 1 AND mid IN (SELECT mid FROM MedicoInfermiere WHERE iid = ?)";
+    db.all(sql, [iid], (err, rows) => {
+      if (err) reject(err);
+      else if (rows.length === 0) resolve(undefined);
+      else {
+        const med = rows.map((row) => createMedicina(row));
+        resolve(med);
+      }
+    });
+  });
+};
+
 // Dato l'ID del paziente, ritorna la lista delle sue medicine
 exports.getMedicineByPaziente = function (pid) {
   return new Promise((resolve, reject) => {
     const sql = "SELECT * FROM Medicine WHERE pid = ? AND presa = 0";
+    db.all(sql, [pid], (err, rows) => {
+      if (err) reject(err);
+      else if (rows.length === 0) resolve(undefined);
+      else {
+        const medicine = rows.map((row) => createMedicina(row));
+        resolve(medicine);
+      }
+    });
+  });
+};
+
+// Dato l'ID del paziente, ritorna la lista delle sue medicine
+exports.getAllMedicineByPaziente = function (pid) {
+  return new Promise((resolve, reject) => {
+    const sql = "SELECT * FROM Medicine WHERE pid = ?";
     db.all(sql, [pid], (err, rows) => {
       if (err) reject(err);
       else if (rows.length === 0) resolve(undefined);

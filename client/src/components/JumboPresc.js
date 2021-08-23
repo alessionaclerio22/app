@@ -4,7 +4,9 @@ import moment from "moment";
 import API from "../api/API_prova";
 import { BsInfo, BsX, BsPlus } from "react-icons/bs";
 import "../App.css";
-import { Alert } from "react-bootstrap";
+import { Alert, Tabs, Tab } from "react-bootstrap";
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import TextField from "@material-ui/core/TextField";
 
 import {
   Modal,
@@ -17,16 +19,19 @@ import {
 } from "react-bootstrap";
 import "./stylesheet.css";
 
+
+
 class JumboPresc extends React.Component {
   state = {
     isOpen: false,
     isOpenAdd: false,
+    isOpenDel: false,
     tipo: "0",
     nome: null,
-    di: null,
-    df: null,
-    freq: null,
-    qg: null,
+    di: moment().format("YYYY-MM-DD"),
+    df: moment().add(6, "days").format("YYYY-MM-DD"),
+    freq: 1,
+    qg: 1,
     note: null,
     prescId: null,
     aiuto: "0",
@@ -34,6 +39,12 @@ class JumboPresc extends React.Component {
     vettOra: Array(60).fill(null),
     vettInizioFascia: Array(60).fill(null),
     vettFineFascia: Array(60).fill(null),
+    vettPrimaDopo: Array(60).fill("0"),
+    vettPasti: Array(60).fill("0"),
+    vettTabs: Array(60).fill("base"),
+    presc: {},
+    index: null,
+    farmaci: [],
   };
 
   modalAddPresc = () => {
@@ -58,7 +69,7 @@ class JumboPresc extends React.Component {
               required
             >
               <option value="0">Misurazione</option>
-              <option value="1">Medicinale</option>
+              <option value="1">Medicina</option>
             </Form.Control>
             <Form.Label>Richiedi Assistenza</Form.Label>
             <Form.Control
@@ -72,19 +83,30 @@ class JumboPresc extends React.Component {
               <option value="1">Sì</option>
             </Form.Control>
 
-            <Form.Label>Nome</Form.Label>
-            <Form.Control
-              name="nome"
-              value={this.state.nome}
-              type="text"
-              placeholder="Nome"
-              onChange={this.handleChange}
-              required
-            />
+            {this.state.tipo === "1" && (
+              <>
+                <Form.Label>Medicinale</Form.Label>
+                <Autocomplete
+                  name="nome"
+                  value={this.state.nome}
+                  onChange={(event, newValue) => {
+                    this.setState({ nome: newValue });
+                  }}
+                  options={this.state.farmaci}
+                  getOptionLabel={(option) => option.farm + "  " + option.conf}
+                  style={{ width: 300 }}
+                  renderInput={(params) => (
+                    <TextField {...params} variant="outlined" />
+                  )}
+                />
+              </>
+            )}
+
             <Form.Label>Data Inizio</Form.Label>
             <Form.Control
               name="di"
               value={this.state.di}
+              defaultValue={moment().format("YYYY-MM-DD")}
               type="date"
               placeholder="gg/mm/aaaa"
               onChange={this.handleChange}
@@ -94,6 +116,7 @@ class JumboPresc extends React.Component {
             <Form.Control
               name="df"
               value={this.state.df}
+              defaultValue={moment().add(6, "days").format("YYYY-MM-DD")}
               type="date"
               placeholder="gg/mm/aaaa"
               onChange={this.handleChange}
@@ -136,8 +159,8 @@ class JumboPresc extends React.Component {
             <Button
               variant="primary"
               type="submit"
-              onClick={this.handleClick}
               style={{ marginTop: "1vh" }}
+              onClick={this.handleSubmit}
             >
               Conferma
             </Button>
@@ -147,7 +170,7 @@ class JumboPresc extends React.Component {
     );
   };
 
-  modalPresc = (p, i) => {
+  modalPresc = () => {
     return (
       <Modal
         show={this.state.isOpen}
@@ -163,50 +186,66 @@ class JumboPresc extends React.Component {
         </Modal.Header>
         <Modal.Body>
           <Table striped bordered hover>
-            <thead>
-              <tr>
-                <th>Campo</th>
-                <th>Valore</th>
-              </tr>
-            </thead>
             <tbody>
               <tr>
-                <td>Data</td>
-                <td>{p.data}</td>
+                <td>
+                  <b>Data</b>
+                </td>
+                <td>{this.state.presc.data}</td>
               </tr>
               <tr>
-                <td>Nome Medico</td>
-                <td>{this.props.mediciPrescrizioni[i]}</td>
+                <td>
+                  <b>Nome Medico</b>
+                </td>
+                <td>{this.props.mediciPrescrizioni[this.state.index]}</td>
               </tr>
               <tr>
-                <td>Tipo</td>
-                {p.farm_mis_n === 1 ? <td>farmaco</td> : <td>misurazione</td>}
+                <td>
+                  <b>Tipo</b>
+                </td>
+                {this.state.presc.farm_mis_n === "1" ? (
+                  <td>Medicina</td>
+                ) : (
+                  <td>Misurazione</td>
+                )}
               </tr>
               <tr>
-                <td>Nome</td>
-                <td>{p.nome}</td>
+                <td>
+                  <b>Nome</b>
+                </td>
+                <td>{this.state.presc.nome}</td>
               </tr>
               <tr>
-                <td>Data Inizio</td>
-                <td>{p.data_inizio}</td>
+                <td>
+                  <b>Data Inizio</b>
+                </td>
+                <td>{this.state.presc.data_inizio}</td>
               </tr>
               <tr>
-                <td>Data Fine</td>
-                <td>{p.data_fine}</td>
+                <td>
+                  <b>Data Fine</b>
+                </td>
+                <td>{this.state.presc.data_fine}</td>
               </tr>
               <tr>
-                <td>Ogni quanti giorni</td>
+                <td>
+                  <b>Ogni quanti giorni</b>
+                </td>
 
-                <td>{p.frequenza}</td>
+                <td>{this.state.presc.frequenza}</td>
               </tr>
               <tr>
-                <td>Quantità giornaliera</td>
-                <td>{p.quantita_giorno}</td>
+                <td>
+                  <b>Quantità giornaliera</b>
+                </td>
+                <td>{this.state.presc.quantita_giorno}</td>
               </tr>
               <tr>
-                <td>Note</td>
+                <td>
+                  <b>Note</b>
+                </td>
 
-                <td>{p.note}</td>
+                <td>{this.state.presc.note}</td>
               </tr>
             </tbody>
           </Table>
@@ -239,61 +278,116 @@ class JumboPresc extends React.Component {
     this.setState({ vettFineFascia: nuovo });
   };
 
+  handlePrimaDopo = (event) => {
+    let nuovo = this.state.vettPrimaDopo.slice();
+    nuovo[event.target.name] = event.target.value;
+    this.setState({ vettPrimaDopo: nuovo });
+  };
+
+  handleVettPasti = (event) => {
+    let nuovo = this.state.vettPasti.slice();
+    nuovo[event.target.name] = event.target.value;
+    this.setState({ vettPasti: nuovo });
+  };
+
   getOre = () => {
     let i = 0;
     let forms = [];
     while (i < this.state.qg) {
       forms.push(
         <Jumbotron style={{ marginTop: "1vh" }}>
-          <Form.Control
-            as="select"
-            name={i}
-            value={this.state.vettOraFascia[i]}
-            onChange={this.handleOraFasciaVett}
-            required
-            custom
+          <Tabs
+            defaultActiveKey="base"
+            id={i + 1}
+            onSelect={(key, event) => {
+              let nuovo = this.state.vettTabs.slice();
+              nuovo[parseInt(event.target.id.substring(0)) - 1] = key;
+              this.setState({ vettTabs: nuovo });
+            }}
           >
-            <option value="1">Ora</option>
-            <option value="0">Fascia Oraria</option>
-          </Form.Control>
-          {this.state.vettOraFascia[i] === "1" && (
-            <>
-              <Form.Control
-                type="time"
-                placeholder="Ora"
-                name={i}
-                onChange={this.handleOraVett}
-                required
-                style={{ marginTop: "2vh" }}
-              />
-            </>
-          )}
-          {this.state.vettOraFascia[i] === "0" && (
-            <>
-              <Row>
+            <Tab eventKey="base" title="Base">
+              <Row className="custom-row">
                 <Col>
-                  <Form.Label>Ora Inizio</Form.Label>
                   <Form.Control
-                    type="time"
-                    placeholder="Ora Inizio"
+                    as="select"
                     name={i}
-                    onChange={this.handleInizioFasciaVett}
+                    value={this.state.vettPrimaDopo[i]}
+                    onChange={this.handlePrimaDopo}
                     required
-                  />
+                    custom
+                  >
+                    <option value="0">Prima</option>
+                    <option value="1">Dopo</option>
+                  </Form.Control>
                 </Col>
                 <Col>
-                  <Form.Label>Ora Fine</Form.Label>
                   <Form.Control
-                    type="time"
-                    placeholder="Ora Fine"
+                    as="select"
                     name={i}
-                    onChange={this.handleFineFasciaVett}
+                    value={this.state.vettPasti[i]}
+                    onChange={this.handleVettPasti}
                     required
-                  />
+                    custom
+                  >
+                    <option value="0">Colazione</option>
+                    <option value="1">Pranzo</option>
+                    <option value="2">Cena</option>
+                  </Form.Control>
                 </Col>
               </Row>
-            </>
-          )}
+            </Tab>
+            <Tab eventKey="pro" title="Pro">
+              <Form.Control
+                as="select"
+                name={i}
+                value={this.state.vettOraFascia[i]}
+                onChange={this.handleOraFasciaVett}
+                required
+                custom
+              >
+                <option value="1">Ora</option>
+                <option value="0">Fascia Oraria</option>
+              </Form.Control>
+              {this.state.vettOraFascia[i] === "1" && (
+                <>
+                  <Form.Control
+                    type="time"
+                    placeholder="Ora"
+                    name={i}
+                    onChange={this.handleOraVett}
+                    required
+                    style={{ marginTop: "2vh" }}
+                  />
+                </>
+              )}
+              {this.state.vettOraFascia[i] === "0" && (
+                <>
+                  <Row className="custom-row">
+                    <Col>
+                      <Form.Label>Ora Inizio</Form.Label>
+                      <Form.Control
+                        type="time"
+                        placeholder="Ora Inizio"
+                        name={i}
+                        onChange={this.handleInizioFasciaVett}
+                        required
+                      />
+                    </Col>
+                    <Col>
+                      <Form.Label>Ora Fine</Form.Label>
+                      <Form.Control
+                        type="time"
+                        placeholder="Ora Fine"
+                        name={i}
+                        onChange={this.handleFineFasciaVett}
+                        required
+                      />
+                    </Col>
+                  </Row>
+                </>
+              )}
+            </Tab>
+          </Tabs>
         </Jumbotron>
       );
 
@@ -304,7 +398,7 @@ class JumboPresc extends React.Component {
 
   returnInputs() {
     let vett = [];
-    for (let i = 0; i < 60; i++) {
+    for (let i = 1; i < 60; i++) {
       vett.push(<option>{i}</option>);
     }
 
@@ -332,9 +426,43 @@ class JumboPresc extends React.Component {
   closeModalAdd = () => this.setState({ isOpenAdd: false });
   openModal = () => this.setState({ isOpen: true });
   closeModal = () => this.setState({ isOpen: false });
+  openModalDel = () => this.setState({ isOpenDel: true });
+  closeModalDel = () => this.setState({ isOpenDel: false });
+
+  componentDidMount = () => {
+    API.getFarmaci()
+      .then((v) => {
+        let farmaciVeri = [];
+        let farmaciSenzaSpazi = [];
+        let eq = 0;
+        let conf;
+
+        v.map((m) => {
+          m.conf1 = m.conf.replace(/\s/g, "");
+          farmaciSenzaSpazi.push(m);
+        });
+        for (let i = 0; i < v.length; i++) {
+          for (let j = 0; j < farmaciVeri.length; j++) {
+            if (
+              farmaciSenzaSpazi[i].farm === farmaciVeri[j].farm &&
+              farmaciSenzaSpazi[i].conf1 === farmaciVeri[j].conf1
+            ) {
+              eq = 1;
+            }
+          }
+          if (eq === 0) {
+            farmaciVeri.push(v[i]);
+          }
+          eq = 0;
+        }
+        this.setState({ farmaci: farmaciVeri });
+      })
+      .catch((errorObj) => console.error(errorObj));
+  };
 
   handleSubmit = (event) => {
     event.preventDefault();
+    this.closeModalAdd();
     var now = moment().format("DD-MM-YYYY");
 
     let startDate = moment(this.state.di, "YYYY-MM-DD");
@@ -343,7 +471,7 @@ class JumboPresc extends React.Component {
       data: now,
       pid: this.props.pid,
       mid: this.props.mid,
-      nome: this.state.nome,
+      nome: this.state.nome.farm + " " + this.state.nome.conf,
       frequenza: this.state.freq,
       data_inizio: this.state.di,
       data_fine: this.state.df,
@@ -356,61 +484,141 @@ class JumboPresc extends React.Component {
       this.closeModal();
       API.addPrescrizione(prescData, this.props.pid)
         .then((lastID) => {
+          this.props.addP(prescData, lastID);
           if (this.state.tipo === "0") {
             //MISURAZIONE
             let currentDate = startDate;
             while (currentDate.isSameOrBefore(this.state.df)) {
               for (let i = 0; i < this.state.qg; i++) {
-                let m = {
-                  prescid: lastID,
-                  pid: this.props.pid,
-                  mid: this.props.mid,
-                  data_fissata: currentDate.format("DD-MM-YYYY"),
-                  tipo: this.state.nome,
-                  valore: null,
-                  note: this.state.note,
-                  timestamp_fatto: null,
-                  aiuto: this.state.aiuto,
-                  ora_fissata: this.state.vettOra[i],
-                  fascia_oraria:
-                    this.state.vettInizioFascia[i] +
-                    "-" +
-                    this.state.vettFineFascia[i],
-                  ora_fascia_n: this.state.vettOraFascia[i],
-                };
-
-                API.addMisurazione(m, this.props.pid)
-                  .then()
-                  .catch((errorObj) => console.error(errorObj));
+                if (this.state.vettTabs[i] === "base") {
+                  let fasciaOraria;
+                  if (this.state.vettPrimaDopo[i] === "0") {
+                    if (this.state.vettPasti[i] === "0") {
+                      fasciaOraria = "04:00-07:00";
+                    } else if (this.state.vettPasti[i] === "1") {
+                      fasciaOraria = "10:00-12:00";
+                    } else if (this.state.vettPasti[i] === "2") {
+                      fasciaOraria = "17:00-19:00";
+                    }
+                  } else if (this.state.vettPrimaDopo[i] === "1") {
+                    if (this.state.vettPasti[i] === "0") {
+                      fasciaOraria = "07:00-10:00";
+                    } else if (this.state.vettPasti[i] === "1") {
+                      fasciaOraria = "13:00-15:00";
+                    } else if (this.state.vettPasti[i] === "2") {
+                      fasciaOraria = "20:00-22:30";
+                    }
+                  }
+                  let m = {
+                    prescid: lastID,
+                    pid: this.props.pid,
+                    mid: this.props.mid,
+                    data_fissata: currentDate.format("DD-MM-YYYY"),
+                    tipo: this.state.nome,
+                    valore: null,
+                    note: this.state.note,
+                    timestamp_fatto: null,
+                    aiuto: this.state.aiuto,
+                    ora_fissata: null,
+                    fascia_oraria: fasciaOraria,
+                    ora_fascia_n: "0",
+                  };
+                  console.log(m);
+                  API.addMisurazione(m, this.props.pid)
+                    .then()
+                    .catch((errorObj) => console.error(errorObj));
+                } else if (this.state.vettTabs[i] === "pro") {
+                  let m = {
+                    prescid: lastID,
+                    pid: this.props.pid,
+                    mid: this.props.mid,
+                    data_fissata: currentDate.format("DD-MM-YYYY"),
+                    tipo: this.state.nome,
+                    valore: null,
+                    note: this.state.note,
+                    timestamp_fatto: null,
+                    aiuto: this.state.aiuto,
+                    ora_fissata: this.state.vettOra[i],
+                    fascia_oraria:
+                      this.state.vettInizioFascia[i] +
+                      "-" +
+                      this.state.vettFineFascia[i],
+                    ora_fascia_n: this.state.vettOraFascia[i],
+                  };
+                  API.addMisurazione(m, this.props.pid)
+                    .then()
+                    .catch((errorObj) => console.error(errorObj));
+                }
               }
               currentDate.add(this.state.freq, "days");
             }
           } else if (this.state.tipo === "1") {
             //MEDICINA
             let currentDate = startDate;
+            console.log(this.state.vettTabs);
+            console.log(this.state.vettPasti);
+            console.log(this.state.vettPrimaDopo);
             while (currentDate.isSameOrBefore(this.state.df)) {
               for (let i = 0; i < this.state.qg; i++) {
-                let m = {
-                  prescid: lastID,
-                  pid: this.props.pid,
-                  mid: this.props.mid,
-                  data: currentDate.format("DD-MM-YYYY"),
-                  tipo: this.state.nome,
-                  note: this.state.note,
-                  aiuto: this.state.aiuto,
-                  ora_fissata: this.state.vettOra[i],
-                  fascia_oraria:
-                    this.state.vettInizioFascia[i] +
-                    "-" +
-                    this.state.vettFineFascia[i],
-                  ora_fascia_n: this.state.vettOraFascia[i],
+                if (this.state.vettTabs[i] === "base") {
+                  let fasciaOraria;
+                  if (this.state.vettPrimaDopo[i] === "0") {
+                    if (this.state.vettPasti[i] === "0") {
+                      fasciaOraria = "04:00-07:00";
+                    } else if (this.state.vettPasti[i] === "1") {
+                      fasciaOraria = "10:00-12:00";
+                    } else if (this.state.vettPasti[i] === "2") {
+                      fasciaOraria = "17:00-19:00";
+                    }
+                  } else if (this.state.vettPrimaDopo[i] === "1") {
+                    if (this.state.vettPasti === "0") {
+                      fasciaOraria = "07:00-10:00";
+                    } else if (this.state.vettPasti[i] === "1") {
+                      fasciaOraria = "13:00-15:00";
+                    } else if (this.state.vettPasti[i] === "2") {
+                      fasciaOraria = "20:00-22:30";
+                    }
+                  }
+                  let m = {
+                    prescid: lastID,
+                    pid: this.props.pid,
+                    mid: this.props.mid,
+                    data: currentDate.format("DD-MM-YYYY"),
+                    tipo: this.state.nome,
+                    note: this.state.note,
+                    aiuto: this.state.aiuto,
+                    ora_fissata: this.state.vettOra[i],
+                    fascia_oraria: fasciaOraria,
+                    ora_fascia_n: "0",
+                    presa: "0",
+                  };
 
-                  presa: "0",
-                };
+                  API.addMedicina(m, this.props.pid)
+                    .then()
+                    .catch((errorObj) => console.error(errorObj));
+                } else if (this.state.vettTabs[i] === "pro") {
+                  let m = {
+                    prescid: lastID,
+                    pid: this.props.pid,
+                    mid: this.props.mid,
+                    data: currentDate.format("DD-MM-YYYY"),
+                    tipo: this.state.nome,
+                    note: this.state.note,
+                    aiuto: this.state.aiuto,
+                    ora_fissata: this.state.vettOra[i],
+                    fascia_oraria:
+                      this.state.vettInizioFascia[i] +
+                      "-" +
+                      this.state.vettFineFascia[i],
+                    ora_fascia_n: this.state.vettOraFascia[i],
 
-                API.addMedicina(m, this.props.pid)
-                  .then()
-                  .catch((errorObj) => console.error(errorObj));
+                    presa: "0",
+                  };
+
+                  API.addMedicina(m, this.props.pid)
+                    .then()
+                    .catch((errorObj) => console.error(errorObj));
+                }
               }
               currentDate.add(this.state.freq, "days");
             }
@@ -423,25 +631,18 @@ class JumboPresc extends React.Component {
 
   render() {
     return (
-      <Jumbotron style={{ marginTop: "5vh", marginBottom: "5vh" }}>
+      <Jumbotron style={{ marginTop: "1rem", marginBottom: "1rem" }}>
         {this.props.tipo === "ConButton" && (
           <>
-            <Row>
-              <Col></Col>
-              <Col>
-                <h2>Prescrizioni</h2>
-              </Col>
-              <Col>
-                <Button
-                  style={{ borderRadius: "50%" }}
-                  variant="outline-success"
-                  onClick={this.openModalAdd}
-                >
-                  <BsPlus style={{ marginBottom: "0.5vh" }} />
-                </Button>
-                <this.modalAddPresc />
-              </Col>
-            </Row>
+            <h2>Prescrizioni</h2>
+            <Button
+              style={{ borderRadius: "50%" }}
+              variant="outline-success"
+              onClick={this.openModalAdd}
+            >
+              <BsPlus style={{ marginBottom: "0.33rem" }} />
+            </Button>
+            <this.modalAddPresc />
           </>
         )}
 
@@ -473,33 +674,65 @@ class JumboPresc extends React.Component {
                       <Button
                         variant="outline-primary"
                         style={{ borderRadius: "50%" }}
-                        onClick={this.openModal}
+                        onClick={() => {
+                          this.setState({ index: i, presc: presc });
+                          this.openModal();
+                        }}
                       >
-                        <BsInfo style={{ marginBottom: "0.5vh" }} />
+                        <BsInfo style={{ marginBottom: "0.5rem" }} />
                       </Button>
-
-                      {this.modalPresc(presc, i)}
                     </td>
                     {this.props.tipo === "ConButton" && (
                       <td>
                         <Button
                           variant="outline-danger"
                           style={{ borderRadius: "50%" }}
-                          onClick={() => this.deletePresc(i)}
+                          onClick={() => {
+                            this.setState({ index: i });
+                            this.openModalDel();
+                          }}
                         >
-                          <BsX style={{ marginBottom: "0.5vh" }} />
+                          <BsX style={{ marginBottom: "0.5rem" }} />
                         </Button>
                       </td>
                     )}
                   </tr>
                 ))}
+                <this.modalPresc />
+                <Modal
+                  show={this.state.isOpenDel}
+                  onHide={this.closeModalDel}
+                  size="lg"
+                  aria-labelledby="contained-modal-title-vcenter"
+                  centered
+                >
+                  <Modal.Header closeButton>
+                    <Col sm="9">
+                      <Modal.Title id="contained-modal-title-vcenter">
+                        Sei sicuro di volere rimuovere la prescrizione?
+                      </Modal.Title>
+                    </Col>
+                    <Col>
+                      <Button
+                        variant="primary"
+                        onClick={() => {
+                          this.props.deleteP(this.state.index);
+                          this.deletePresc(this.state.index);
+                          this.closeModalDel();
+                        }}
+                      >
+                        Conferma
+                      </Button>
+                    </Col>
+                  </Modal.Header>
+                </Modal>
               </tbody>
             </Table>
           </Jumbotron>
         )}
 
         {this.props.prescUtente.length === 0 && (
-          <Alert variant="info" style={{ marginTop: "6vh" }}>
+          <Alert variant="info" style={{ marginTop: "1rem" }}>
             Non ci sono prescrizioni
           </Alert>
         )}

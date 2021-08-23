@@ -80,12 +80,14 @@ class PazientePrescMis extends React.Component {
 
   render() {
     return (
-      <Row>
+      <Row className="custom-row">
         {this.props.tipo === "home" && (
-          <CardDatiUtente tipo="paziente" utente={this.state.utente} />
+          <Col sm={2}>
+            <CardDatiUtente tipo="paziente" utente={this.state.utente} />
+          </Col>
         )}
 
-        <Col sm={4} style={{ marginLeft: "4vh" }}>
+        <Col sm={4} style={{ marginLeft: "3rem" }}>
           <JumboPresc
             tipo="SenzaButton"
             prescUtente={this.state.prescUtente}
@@ -93,7 +95,7 @@ class PazientePrescMis extends React.Component {
           />
         </Col>
 
-        <Col sm={4} style={{ marginLeft: "10vh" }}>
+        <Col sm={4} style={{ marginLeft: "2rem", marginRight: "2rem" }}>
           <JumboMis tipiMis={this.state.tipiMis} pid={this.props.id} />
         </Col>
       </Row>

@@ -15,7 +15,7 @@ const NavigationBar = (props) => {
           <Navbar.Brand>App</Navbar.Brand>
 
           <Nav className="mr-auto">
-            {context.authUser && this.props.tipo === "0" && (
+            {context.authUser && context.tipo === "0" && (
               <>
                 <Nav.Link
                   as={NavLink}
@@ -25,14 +25,22 @@ const NavigationBar = (props) => {
                 >
                   Home
                 </Nav.Link>
-                <Nav.Link>Prescrizioni</Nav.Link>
-                <Nav.Link>Misurazioni</Nav.Link>
-                <Nav.Link>I miei Medici</Nav.Link>
-                <Nav.Link>Calendario</Nav.Link>
+                <Nav.Link
+                  as={NavLink}
+                  to={`/pazienti/${context.authUser.id}/prescmis`}
+                >
+                  Prescrizioni e Misurazioni
+                </Nav.Link>
+                <Nav.Link
+                  as={NavLink}
+                  to={`/pazienti/${context.authUser.id}/calendario`}
+                >
+                  Calendario
+                </Nav.Link>
               </>
             )}
 
-            {context.authUser && this.props.tipo === "1" && (
+            {context.authUser && context.tipo === "1" && (
               <>
                 <Nav.Link
                   as={NavLink}
@@ -40,13 +48,16 @@ const NavigationBar = (props) => {
                 >
                   Home
                 </Nav.Link>
-                <Nav.Link>I Miei Pazienti</Nav.Link>
-                <Nav.Link>Infermieri Associati</Nav.Link>
-                <Nav.Link>Calendario</Nav.Link>
+                <Nav.Link
+                  as={NavLink}
+                  to={`/medici/${context.authUser.id}/calendario`}
+                >
+                  Calendario
+                </Nav.Link>
               </>
             )}
 
-            {context.authUser && this.props.tipo === "2" && (
+            {context.authUser && context.tipo === "2" && (
               <>
                 <Nav.Link
                   as={NavLink}
@@ -58,15 +69,14 @@ const NavigationBar = (props) => {
                 >
                   Home
                 </Nav.Link>
-                <Nav.Link>Medico Associato e Pazienti</Nav.Link>
               </>
             )}
           </Nav>
 
           <Nav className="ml-md-auto">
-            {context.authUser && this.props.tipo === "0" && (
+            {context.authUser && context.tipo === "0" && (
               <>
-                <Navbar.Brand>Benvenuto "PAZIENTE"!</Navbar.Brand>
+                <Navbar.Brand>Benvenuto {context.authUser.name}</Navbar.Brand>
                 <Nav.Link
                   onClick={() => {
                     context.logoutUser();
@@ -77,9 +87,9 @@ const NavigationBar = (props) => {
               </>
             )}
 
-            {context.authUser && this.props.tipo === "1" && (
+            {context.authUser && context.tipo === "1" && (
               <>
-                <Navbar.Brand>Benvenuto "MEDICO"!</Navbar.Brand>
+                <Navbar.Brand>Benvenuto {context.authUser.name}</Navbar.Brand>
                 <Nav.Link
                   onClick={() => {
                     context.logoutUser();
@@ -90,9 +100,9 @@ const NavigationBar = (props) => {
               </>
             )}
 
-            {context.authUser && this.props.tipo === "2" && (
+            {context.authUser && context.tipo === "2" && (
               <>
-                <Navbar.Brand>Benvenuto "INFERMIERE"!</Navbar.Brand>
+                <Navbar.Brand>Benvenuto {context.authUser.name}</Navbar.Brand>
                 <Nav.Link
                   onClick={() => {
                     context.logoutUser();

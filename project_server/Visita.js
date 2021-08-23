@@ -1,7 +1,7 @@
 "use strict" ;
 
 class Visita{
-    constructor(mid, pid, data, ora, fatto, delega){
+    constructor(mid, pid, data, ora, fatto, delega, remoto, note){
 
         if(mid)
             this.mid = mid;
@@ -20,6 +20,12 @@ class Visita{
 
         if(delega)
             this.delega = delega;
+
+        if (remoto)
+            this.remoto = remoto;
+        
+        if (note)
+            this.note = note;
     }
 }
 

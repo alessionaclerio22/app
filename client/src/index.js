@@ -11,6 +11,7 @@ ReactDOM.render(
   <React.StrictMode>
     <Router>
       <App />
+      <script src="https://meet.jit.si/external_api.js"></script>
     </Router>
   </React.StrictMode>,
   document.getElementById("root")

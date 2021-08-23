@@ -6,10 +6,14 @@ import Misurazione from "./Misurazione";
 import Visita from "./Visita";
 import Prescrizione from "./Prescrizione";
 import Nota from "./Nota";
+import Farmaco from "./Farmaco";
+import Comune from "./Comune";
+import Richiesta_MedInf from "./Richiesta_MedInf";
+import Richiesta_MedPaz from "./Richiesta_MedPaz";
 const baseURL = "/api";
 
-async function isAuthenticated(tipo) {
-  let url = "/";
+async function isAuthenticated() {
+  let url = "/auth";
   const response = await fetch(baseURL + url);
   const userJson = await response.json();
   if (response.ok) {
@@ -17,6 +21,45 @@ async function isAuthenticated(tipo) {
   } else {
     let err = { status: response.status, errObj: userJson };
     throw err; // An object with the error coming from the server
+  }
+}
+
+async function isPazPresent(m) {
+  let url = "/pazpresent/?username=" + m;
+  const response = await fetch(baseURL + url);
+  const pJson = await response.json();
+
+  if (response.ok) {
+    return pJson
+  } else {
+    let err = { status: response.status, errObj: pJson };
+    throw err;
+  }
+}
+
+async function isMedPresent(m) {
+  let url = "/medpresent/?username=" + m;
+  const response = await fetch(baseURL + url);
+  const pJson = await response.json();
+
+  if (response.ok) {
+    return pJson;
+  } else {
+    let err = { status: response.status, errObj: pJson };
+    throw err;
+  }
+}
+
+async function isInfPresent(m) {
+  let url = "/infpresent/?username=" + m;
+  const response = await fetch(baseURL + url);
+  const pJson = await response.json();
+
+  if (response.ok) {
+    return pJson;
+  } else {
+    let err = { status: response.status, errObj: pJson };
+    throw err;
   }
 }
 
@@ -156,6 +199,202 @@ async function userLogout(username, password) {
 
 // GET
 
+async function getRichiestePazByMedicoID(mid) {
+  let url = "/medici/" + mid + "/richiestepaz/?sender=paziente";
+  const response = await fetch(baseURL + url);
+  const pJson = await response.json();
+
+  if (response.ok) {
+    return pJson.map((p) => {
+      return new Richiesta_MedPaz(p.mid, p.pid, p.sender);
+    });
+  } else {
+    let err = { status: response.status, errObj: pJson };
+    throw err;
+  }
+}
+
+async function getRichiestePazSentByMedicoID(mid) {
+  let url = "/medici/" + mid + "/richiestepaz/?sender=medico";
+  const response = await fetch(baseURL + url);
+  const pJson = await response.json();
+
+  if (response.ok) {
+    return pJson.map((p) => {
+      return new Richiesta_MedPaz(p.mid, p.pid, p.sender);
+    });
+  } else {
+    let err = { status: response.status, errObj: pJson };
+    throw err;
+  }
+}
+
+async function getRichiesteInfByMedicoID(mid) {
+  let url = "/medici/" + mid + "/richiesteinf/?sender=infermiere";
+  const response = await fetch(baseURL + url);
+  const pJson = await response.json();
+
+  if (response.ok) {
+    return pJson.map((p) => {
+      return new Richiesta_MedInf(p.mid, p.iid, p.sender);
+    });
+  } else {
+    let err = { status: response.status, errObj: pJson };
+    throw err;
+  }
+}
+
+async function getRichiesteInfSentByMedicoID(mid) {
+  let url = "/medici/" + mid + "/richiesteinf/?sender=medico";
+  const response = await fetch(baseURL + url);
+  const pJson = await response.json();
+
+  if (response.ok) {
+    return pJson.map((p) => {
+      return new Richiesta_MedInf(p.mid, p.iid, p.sender);
+    });
+  } else {
+    let err = { status: response.status, errObj: pJson };
+    throw err;
+  }
+}
+
+async function getRichiesteByPazienteID(pid) {
+  let url = "/pazienti/" + pid + "/richieste/?sender=medico";
+  const response = await fetch(baseURL + url);
+  const pJson = await response.json();
+
+  if (response.ok) {
+    return pJson.map((p) => {
+      return new Richiesta_MedPaz(p.mid, p.pid, p.sender);
+    });
+  } else {
+    let err = { status: response.status, errObj: pJson };
+    throw err;
+  }
+}
+
+async function getRichiesteSentByPazienteID(pid) {
+  let url = "/pazienti/" + pid + "/richieste/?sender=paziente";
+  const response = await fetch(baseURL + url);
+  const pJson = await response.json();
+
+  if (response.ok) {
+    return pJson.map((p) => {
+      return new Richiesta_MedPaz(p.mid, p.pid, p.sender);
+    });
+  } else {
+    let err = { status: response.status, errObj: pJson };
+    throw err;
+  }
+}
+
+async function getRichiesteByInfermiereID(iid) {
+  let url = "/infermieri/" + iid + "/richieste/?sender=medico";
+  const response = await fetch(baseURL + url);
+  const pJson = await response.json();
+
+  if (response.ok) {
+    return pJson.map((p) => {
+      return new Richiesta_MedInf(p.mid, p.iid, p.sender);
+    });
+  } else {
+    let err = { status: response.status, errObj: pJson };
+    throw err;
+  }
+}
+
+async function getRichiesteSentByInfermiereID(iid) {
+  let url = "/infermieri/" + iid + "/richieste/?sender=infermiere";
+  const response = await fetch(baseURL + url);
+  const pJson = await response.json();
+
+  if (response.ok) {
+    return pJson.map((p) => {
+      return new Richiesta_MedInf(p.mid, p.iid, p.sender);
+    });
+  } else {
+    let err = { status: response.status, errObj: pJson };
+    throw err;
+  }
+}
+
+async function getMedicoByMail(mail) {
+  let url = "/medici/?mail=" + mail;
+
+  const response = await fetch(baseURL + url);
+  const m = await response.json();
+
+  if (response.ok) {
+    return new Medico(
+      m.mid,
+      m.nome,
+      m.cognome,
+      m.data_nascita,
+      m.sede_ambulatorio,
+      m.spec,
+      m.telefono,
+      m.mail,
+      m.foto,
+      m.ordine,
+      m.numero_ordine
+    );
+  } else {
+    let err = { status: response.status, errObj: m };
+    throw err;
+  }
+}
+
+async function getInfermiereByMail(mail) {
+  let url = "/infermieri/?mail=" + mail;
+
+  const response = await fetch(baseURL + url);
+  const i = await response.json();
+
+  if (response.ok) {
+    return new Infermiere(
+      i.iid,
+      i.nome,
+      i.cognome,
+      i.data_nascita,
+      i.mail,
+      i.foto,
+      i.numero_ordine,
+      i.ordine,
+      i.telefono
+    );
+  } else {
+    let err = { status: response.status, errObj: i };
+    throw err;
+  }
+}
+
+async function getPazienteByMail(mail) {
+  let url = "/pazienti/?mail=" + mail;
+
+  const response = await fetch(baseURL + url);
+  const p = await response.json();
+
+  if (response.ok) {
+    return new Paziente(
+      p.pid,
+      p.nome,
+      p.cognome,
+      p.data_nascita,
+      p.password,
+      p.mail,
+      p.foto,
+      p.telefono,
+      p.codice_fiscale,
+      p.tesserino_sanitario,
+      p.indirizzo
+    );
+  } else {
+    let err = { status: response.status, errObj: p };
+    throw err;
+  }
+}
+
 async function getPazienteById(id) {
   let url = "/pazienti/";
 
@@ -184,8 +423,78 @@ async function getPazienteById(id) {
   }
 }
 
+async function getFarmaci() {
+  let url = "/farmaci/";
+  const response = await fetch(baseURL + url);
+  const pJson = await response.json();
+
+  if (response.ok) {
+    return pJson.map((p) => {
+      return new Farmaco(
+        p.pa,
+        p.confRif,
+        p.AIC,
+        p.ATC,
+        p.farm,
+        p.conf,
+        p.ditta,
+        p.prezzoRif,
+        p.prezzoPub,
+        p.diff,
+        p.nota,
+        p.cge
+      );
+    });
+  } else {
+    let err = { status: response.status, errObj: pJson };
+    throw err;
+  }
+}
+
+async function getComuni() {
+  let url = "/comuni/";
+  const response = await fetch(baseURL + url);
+  const pJson = await response.json();
+
+  if (response.ok) {
+    return pJson.map((p) => {
+      return new Comune(p.nome, p.sigla);
+    });
+  } else {
+    let err = { status: response.status, errObj: pJson };
+    throw err;
+  }
+}
+
 async function getPazientiByMedicoID(mid) {
   let url = "/medici/" + mid + "/pazienti";
+  const response = await fetch(baseURL + url);
+  const pJson = await response.json();
+
+  if (response.ok) {
+    return pJson.map((p) => {
+      return new Paziente(
+        p.pid,
+        p.nome,
+        p.cognome,
+        p.data_nascita,
+        p.password,
+        p.mail,
+        p.foto,
+        p.telefono,
+        p.codice_fiscale,
+        p.tesserino_sanitario,
+        p.indirizzo
+      );
+    });
+  } else {
+    let err = { status: response.status, errObj: pJson };
+    throw err;
+  }
+}
+
+async function getAllPazienti() {
+  let url = "/pazienti";
   const response = await fetch(baseURL + url);
   const pJson = await response.json();
 
@@ -267,6 +576,34 @@ async function getInfermiereById(id) {
 
 async function getMediciByPaziente(pid) {
   let url = "/pazienti/" + pid + "/medici";
+
+  const response = await fetch(baseURL + url);
+  const medicoJson = await response.json();
+
+  if (response.ok) {
+    return medicoJson.map((m) => {
+      return new Medico(
+        m.mid,
+        m.nome,
+        m.cognome,
+        m.data_nascita,
+        m.sede_ambulatorio,
+        m.spec,
+        m.telefono,
+        m.mail,
+        m.foto,
+        m.ordine,
+        m.numero_ordine
+      );
+    });
+  } else {
+    let err = { status: response.status, errObj: medicoJson };
+    throw err;
+  }
+}
+
+async function getAllMedici() {
+  let url = "/medici";
 
   const response = await fetch(baseURL + url);
   const medicoJson = await response.json();
@@ -414,6 +751,36 @@ async function getMedicineByPaziente(pid) {
   }
 }
 
+async function getAllMedicineByPaziente(pid) {
+  let url = "/pazienti/" + pid + "/calendario/medicine";
+
+  const response = await fetch(baseURL + url);
+  const medicineJson = await response.json();
+
+  if (response.ok) {
+    return medicineJson.map((m) => {
+      console.log(m);
+      return new Medicina(
+        m.medid,
+        m.prescid,
+        m.mid,
+        m.pid,
+        m.data,
+        m.tipo,
+        m.note,
+        m.aiuto,
+        m.presa,
+        m.ora_fissata,
+        m.fascia_oraria,
+        m.ora_fascia_n
+      );
+    });
+  } else {
+    let err = { status: response.status, errObj: medicineJson };
+    throw err;
+  }
+}
+
 async function getTodayHelpMedicine(iid) {
   var today = new Date();
   var dd = String(today.getDate()).padStart(2, "0");
@@ -423,6 +790,35 @@ async function getTodayHelpMedicine(iid) {
   today = dd + "-" + mm + "-" + yyyy;
 
   let url = "/infermieri/" + iid + "/medicine/?data=" + today;
+
+  const response = await fetch(baseURL + url);
+  const medicineJson = await response.json();
+
+  if (response.ok) {
+    return medicineJson.map((m) => {
+      return new Medicina(
+        m.medid,
+        m.prescid,
+        m.mid,
+        m.pid,
+        m.data,
+        m.tipo,
+        m.note,
+        m.aiuto,
+        m.presa,
+        m.ora_fissata,
+        m.fascia_oraria,
+        m.ora_fascia_n
+      );
+    });
+  } else {
+    let err = { status: response.status, errObj: medicineJson };
+    throw err;
+  }
+}
+
+async function getAllHelpMedicine(iid) {
+  let url = "/infermieri/" + iid + "/medicine";
 
   const response = await fetch(baseURL + url);
   const medicineJson = await response.json();
@@ -524,6 +920,36 @@ async function getTodayHelpMisurazioni(iid) {
   }
 }
 
+async function getAllHelpMisurazioni(iid) {
+  let url = "/infermieri/" + iid + "/misurazioni";
+
+  const response = await fetch(baseURL + url);
+  const misJson = await response.json();
+
+  if (response.ok) {
+    return misJson.map((m) => {
+      return new Misurazione(
+        m.misid,
+        m.prescid,
+        m.mid,
+        m.pid,
+        m.data_fissata,
+        m.tipo,
+        m.valore,
+        m.note,
+        m.timestamp_fatto,
+        m.aiuto,
+        m.ora_fissata,
+        m.fascia_oraria,
+        m.ora_fascia_n
+      );
+    });
+  } else {
+    let err = { status: response.status, errObj: misJson };
+    throw err;
+  }
+}
+
 async function getVisiteByPazienteData(pid) {
   var today = new Date();
   var dd = String(today.getDate()).padStart(2, "0");
@@ -539,7 +965,16 @@ async function getVisiteByPazienteData(pid) {
 
   if (response.ok) {
     return visJson.map((m) => {
-      return new Visita(m.mid, m.pid, m.data, m.ora, m.fatto, m.delega);
+      return new Visita(
+        m.mid,
+        m.pid,
+        m.data,
+        m.ora,
+        m.fatto,
+        m.delega,
+        m.remoto,
+        m.note
+      );
     });
   } else {
     let err = { status: response.status, errObj: visJson };
@@ -555,7 +990,16 @@ async function getVisiteByPaziente(pid) {
 
   if (response.ok) {
     return visJson.map((m) => {
-      return new Visita(m.mid, m.pid, m.data, m.ora, m.fatto, m.delega);
+      return new Visita(
+        m.mid,
+        m.pid,
+        m.data,
+        m.ora,
+        m.fatto,
+        m.delega,
+        m.remoto,
+        m.note
+      );
     });
   } else {
     let err = { status: response.status, errObj: visJson };
@@ -594,7 +1038,41 @@ async function getVisiteDelegaToday(iid) {
 
   if (response.ok) {
     return visJson.map((m) => {
-      return new Visita(m.mid, m.pid, m.data, m.ora, m.fatto, m.delega);
+      return new Visita(
+        m.mid,
+        m.pid,
+        m.data,
+        m.ora,
+        m.fatto,
+        m.delega,
+        m.remoto,
+        m.note
+      );
+    });
+  } else {
+    let err = { status: response.status, errObj: visJson };
+    throw err;
+  }
+}
+
+async function getAllVisiteDelega(iid) {
+  let url = "/infermieri/" + iid + "/visite";
+
+  const response = await fetch(baseURL + url);
+  const visJson = await response.json();
+
+  if (response.ok) {
+    return visJson.map((m) => {
+      return new Visita(
+        m.mid,
+        m.pid,
+        m.data,
+        m.ora,
+        m.fatto,
+        m.delega,
+        m.remoto,
+        m.note
+      );
     });
   } else {
     let err = { status: response.status, errObj: visJson };
@@ -617,7 +1095,16 @@ async function getVisiteByMedicoData(mid) {
 
   if (response.ok) {
     return visJson.map((m) => {
-      return new Visita(m.mid, m.pid, m.data, m.ora, m.fatto, m.delega);
+      return new Visita(
+        m.mid,
+        m.pid,
+        m.data,
+        m.ora,
+        m.fatto,
+        m.delega,
+        m.remoto,
+        m.note
+      );
     });
   } else {
     let err = { status: response.status, errObj: visJson };
@@ -633,7 +1120,16 @@ async function getVisiteByMedico(mid) {
 
   if (response.ok) {
     return visJson.map((m) => {
-      return new Visita(m.mid, m.pid, m.data, m.ora, m.fatto, m.delega);
+      return new Visita(
+        m.mid,
+        m.pid,
+        m.data,
+        m.ora,
+        m.fatto,
+        m.delega,
+        m.remoto,
+        m.note
+      );
     });
   } else {
     let err = { status: response.status, errObj: visJson };
@@ -643,6 +1139,33 @@ async function getVisiteByMedico(mid) {
 
 async function getInfermieriByMedicoID(mid) {
   let url = "/medici/" + mid + "/infermieri";
+
+  const response = await fetch(baseURL + url);
+  const infJson = await response.json();
+
+  if (response.ok) {
+    return infJson.map((i) => {
+      return new Infermiere(
+        i.iid,
+        i.nome,
+        i.cognome,
+        i.data_nascita,
+        i.mail,
+        i.foto,
+        i.numero_ordine,
+        i.ordine,
+        i.telefono,
+        i.hash
+      );
+    });
+  } else {
+    let err = { status: response.status, errObj: infJson };
+    throw err;
+  }
+}
+
+async function getAllInfermieri() {
+  let url = "/infermieri";
 
   const response = await fetch(baseURL + url);
   const infJson = await response.json();
@@ -716,6 +1239,36 @@ async function getMisurazioniByPazienteByTipo(pid, tipo) {
 
 async function getMisurazioniByPaziente(pid, tutto) {
   let url = "/pazienti/" + pid + "/misurazioni/?tutto=" + tutto;
+
+  const response = await fetch(baseURL + url);
+  const misJson = await response.json();
+
+  if (response.ok) {
+    return misJson.map((m) => {
+      return new Misurazione(
+        m.misid,
+        m.prescid,
+        m.mid,
+        m.pid,
+        m.data_fissata,
+        m.tipo,
+        m.valore,
+        m.note,
+        m.timestamp_fatto,
+        m.aiuto,
+        m.ora_fissata,
+        m.fascia_oraria,
+        m.ora_fascia_n
+      );
+    });
+  } else {
+    let err = { status: response.status, errObj: misJson };
+    throw err;
+  }
+}
+
+async function getAllMisurazioniByPaziente(pid) {
+  let url = "/pazienti/" + pid + "/calendario/misurazioni";
 
   const response = await fetch(baseURL + url);
   const misJson = await response.json();
@@ -885,6 +1438,76 @@ async function addNota(nota, pid) {
   });
 }
 
+async function addCura(cura) {
+  let url = "/cure";
+
+  return new Promise((resolve, reject) => {
+    fetch(baseURL + url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(cura),
+    })
+      .then((response) => {
+        if (response.ok) {
+          resolve(null);
+        } else {
+          response
+            .json()
+            .then((obj) => {
+              reject(obj);
+            }) // error msg in the response body
+            .catch((err) => {
+              reject({
+                errors: [
+                  { param: "Application", msg: "Cannot parse server response" },
+                ],
+              });
+            });
+        }
+      })
+      .catch((err) => {
+        reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] });
+      });
+  });
+}
+
+async function addMedInf(mi) {
+  let url = "/mediciinfermieri";
+
+  return new Promise((resolve, reject) => {
+    fetch(baseURL + url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(mi),
+    })
+      .then((response) => {
+        if (response.ok) {
+          resolve(null);
+        } else {
+          response
+            .json()
+            .then((obj) => {
+              reject(obj);
+            }) // error msg in the response body
+            .catch((err) => {
+              reject({
+                errors: [
+                  { param: "Application", msg: "Cannot parse server response" },
+                ],
+              });
+            });
+        }
+      })
+      .catch((err) => {
+        reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] });
+      });
+  });
+}
+
 async function addVisita(visita, pid) {
   let url = "/pazienti/" + pid + "/visite";
 
@@ -895,6 +1518,76 @@ async function addVisita(visita, pid) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(visita),
+    })
+      .then((response) => {
+        if (response.ok) {
+          resolve(null);
+        } else {
+          response
+            .json()
+            .then((obj) => {
+              reject(obj);
+            }) // error msg in the response body
+            .catch((err) => {
+              reject({
+                errors: [
+                  { param: "Application", msg: "Cannot parse server response" },
+                ],
+              });
+            });
+        }
+      })
+      .catch((err) => {
+        reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] });
+      });
+  });
+}
+
+async function addRichiestaMedPaz(ric) {
+  let url = "/richiestemedpaz";
+
+  return new Promise((resolve, reject) => {
+    fetch(baseURL + url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(ric),
+    })
+      .then((response) => {
+        if (response.ok) {
+          resolve(null);
+        } else {
+          response
+            .json()
+            .then((obj) => {
+              reject(obj);
+            }) // error msg in the response body
+            .catch((err) => {
+              reject({
+                errors: [
+                  { param: "Application", msg: "Cannot parse server response" },
+                ],
+              });
+            });
+        }
+      })
+      .catch((err) => {
+        reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] });
+      });
+  });
+}
+
+async function addRichiestaMedInf(ric) {
+  let url = "/richiestemedinf";
+
+  return new Promise((resolve, reject) => {
+    fetch(baseURL + url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(ric),
     })
       .then((response) => {
         if (response.ok) {
@@ -1434,8 +2127,110 @@ async function deletePrescrizione(presc) {
   });
 }
 
+async function deleteRichiestaMedInf(ric) {
+  return new Promise((resolve, reject) => {
+    fetch(baseURL + "/richiestemedinf", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(ric),
+    })
+      .then((response) => {
+        if (response.ok) {
+          resolve(null);
+        } else {
+          response
+            .json()
+            .then((obj) => {
+              reject(obj);
+            }) // error msg in the response body
+            .catch((err) => {
+              reject({
+                errors: [
+                  { param: "Application", msg: "Cannot parse server response" },
+                ],
+              });
+            });
+        }
+      })
+      .catch((err) => {
+        reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] });
+      });
+  });
+}
+
+async function deleteRichiestaMedInfAll(ric) {
+  return new Promise((resolve, reject) => {
+    fetch(baseURL + "/richiestemedinf/?all=true", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(ric),
+    })
+      .then((response) => {
+        if (response.ok) {
+          resolve(null);
+        } else {
+          response
+            .json()
+            .then((obj) => {
+              reject(obj);
+            }) // error msg in the response body
+            .catch((err) => {
+              reject({
+                errors: [
+                  { param: "Application", msg: "Cannot parse server response" },
+                ],
+              });
+            });
+        }
+      })
+      .catch((err) => {
+        reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] });
+      });
+  });
+}
+
+async function deleteRichiestaMedPaz(ric) {
+  return new Promise((resolve, reject) => {
+    fetch(baseURL + "/richiestemedpaz", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(ric),
+    })
+      .then((response) => {
+        if (response.ok) {
+          resolve(null);
+        } else {
+          response
+            .json()
+            .then((obj) => {
+              reject(obj);
+            }) // error msg in the response body
+            .catch((err) => {
+              reject({
+                errors: [
+                  { param: "Application", msg: "Cannot parse server response" },
+                ],
+              });
+            });
+        }
+      })
+      .catch((err) => {
+        reject({ errors: [{ param: "Server", msg: "Cannot communicate" }] });
+      });
+  });
+}
+
 const API = {
   isAuthenticated,
+  isInfPresent,
+  isPazPresent,
+  isMedPresent,
   pazienteLogin,
   medicoLogin,
   infermiereLogin,
@@ -1446,6 +2241,9 @@ const API = {
   getInfermiereById,
   getMediciByPaziente,
   getMedicineByPazienteData,
+  getAllMedici,
+  getAllInfermieri,
+  getAllPazienti,
   getInfermieriByMedicoID,
   getMisurazioniByPazienteData,
   getVisiteByPazienteData,
@@ -1462,6 +2260,24 @@ const API = {
   getNoteByPazienteID,
   getMisurazioniByPaziente,
   getVisiteByMedico,
+  getMedicoByMail,
+  getInfermiereByMail,
+  getPazienteByMail,
+  getAllVisiteDelega,
+  getAllHelpMedicine,
+  getAllHelpMisurazioni,
+  getAllMisurazioniByPaziente,
+  getAllMedicineByPaziente,
+  getFarmaci,
+  getComuni,
+  getRichiestePazByMedicoID,
+  getRichiesteInfByMedicoID,
+  getRichiesteByPazienteID,
+  getRichiesteByInfermiereID,
+  getRichiestePazSentByMedicoID,
+  getRichiesteInfSentByMedicoID,
+  getRichiesteSentByPazienteID,
+  getRichiesteSentByInfermiereID,
   //POST
   addMedico,
   addPaziente,
@@ -1471,6 +2287,10 @@ const API = {
   addPrescrizione,
   addMisurazione,
   addMedicina,
+  addRichiestaMedInf,
+  addRichiestaMedPaz,
+  addCura,
+  addMedInf,
   //PUT
   editMedico,
   editPaziente,
@@ -1486,6 +2306,9 @@ const API = {
   deleteVisita,
   deletePrescrizione,
   getMedicineByPaziente,
+  deleteRichiestaMedInf,
+  deleteRichiestaMedPaz,
+  deleteRichiestaMedInfAll,
 };
 
 export default API;

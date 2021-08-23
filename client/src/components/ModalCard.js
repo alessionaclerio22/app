@@ -68,21 +68,116 @@ class ModalCard extends Component {
         .catch((errorObj) => {
           console.error(errorObj);
         });
+
+      API.isMedPresent(p.mail)
+        .then((u) => {
+          if (u.found === "1") {
+            API.getMedicoByMail(p.mail)
+              .then((medico) => {
+                console.log(medico);
+                let m = {
+                  nome: this.state.nome,
+                  cognome: this.state.cognome,
+                  data_nascita: this.state.data,
+                  sede_ambulatorio: medico.sede_ambulatorio,
+                  spec: medico.spec,
+                  telefono: this.state.tel,
+                  mail: this.state.mail,
+                  ordine: medico.ordine,
+                  numero_ordine: medico.numero_ordine,
+                  mid: medico.mid,
+                };
+                API.editMedico(m)
+                  .then(() => {
+                    this.props.changeUtente(p);
+                  })
+                  .catch((errorObj) => {
+                    console.error(errorObj);
+                  });
+              })
+              .catch((errorObj) => {
+                console.error(errorObj);
+              });
+          } else {
+            API.isInfPresent(p.mail)
+              .then((u) => {
+                if (u.found === "1") {
+                  API.getInfermiereByMail(p.mail)
+                    .then((inf) => {
+                      let i = {
+                        nome: this.state.nome,
+                        cognome: this.state.cognome,
+                        telefono: this.state.tel,
+                        mail: this.state.mail,
+                        data_nascita: this.state.data,
+                        ordine: inf.ordine,
+                        numero_ordine: inf.numero_ordine,
+                        iid: inf.iid,
+                      };
+                      API.editInfermiere(i)
+                        .then(() => {
+                          this.props.changeUtente(p);
+                        })
+                        .catch((errorObj) => {
+                          console.error(errorObj);
+                        });
+                    })
+                    .catch((errorObj) => {
+                      console.error(errorObj);
+                    });
+                } else {
+                  
+                    this.props.changeUtente(p);
+                }
+              })
+              .catch();
+          }
+        })
+        .catch();
     } else if (this.props.tipo === "medico") {
       let m = {
         nome: this.state.nome,
         cognome: this.state.cognome,
         data_nascita: this.state.data,
         sede_ambulatorio: this.state.sa,
-        specializzazione: this.state.spec,
+        spec: this.state.spec,
         telefono: this.state.tel,
         mail: this.state.mail,
         ordine: this.state.ordine,
         numero_ordine: this.state.numord,
         mid: this.props.id,
       };
+      console.log(m);
       API.editMedico(m)
-        .then()
+        .then(() => {
+          API.getPazienteByMail(m.mail)
+            .then((p) => {
+              console.log(p);
+              console.log(this.state.data);
+              let paz = {
+                nome: m.nome,
+                cognome: m.cognome,
+                data_nascita: this.state.data,
+                tesserino_sanitario: p.tesserino_sanitario,
+                codice_fiscale: p.codice_fiscale,
+                indirizzo: p.indirizzo,
+                telefono: m.telefono,
+                mail: m.mail,
+                pid: p.pid,
+              };
+              console.log(paz);
+              API.editPaziente(paz)
+                .then(() => {
+                  this.props.changeUtente(m);
+                })
+                .catch((errorObj) => {
+                  console.error(errorObj);
+                });
+            })
+            .catch((errorObj) => {
+              console.error(errorObj);
+            });
+        })
         .catch((errorObj) => {
           console.error(errorObj);
         });
@@ -98,7 +193,32 @@ class ModalCard extends Component {
         iid: this.props.id,
       };
       API.editInfermiere(i)
-        .then()
+        .then(() => {
+          API.getPazienteByMail(i.mail)
+            .then((p) => {
+              let paz = {
+                nome: i.nome,
+                cognome: i.cognome,
+                data_nascita: this.state.data,
+                tesserino_sanitario: p.tesserino_sanitario,
+                codice_fiscale: p.codice_fiscale,
+                indirizzo: p.indirizzo,
+                telefono: i.telefono,
+                mail: i.mail,
+                pid: p.pid,
+              };
+              API.editPaziente(paz)
+                .then(() => {
+                  this.props.changeUtente(i);
+                })
+                .catch((errorObj) => {
+                  console.error(errorObj);
+                });
+            })
+            .catch((errorObj) => {
+              console.error(errorObj);
+            });
+        })
         .catch((errorObj) => {
           console.error(errorObj);
         });

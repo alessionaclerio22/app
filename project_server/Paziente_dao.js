@@ -122,6 +122,7 @@ exports.getPazienteByMail = function (mail) {
       else if (rows.length === 0) resolve(undefined);
       else {
         const paziente = createPaziente(rows[0]);
+        console.log(paziente);
         resolve(paziente);
       }
     });
@@ -146,32 +147,33 @@ exports.getPazientiByInfermiere = function (iid) {
 };
 
 exports.checkPassword = function (user, password) {
-  console.log("hash of: " + password);
+  /*console.log("hash of: " + password);
   let hash = bcrypt.hashSync(password, 10);
   console.log(hash);
   console.log("DONE");
 
-  return bcrypt.compareSync(password, user.hash);
+  return bcrypt.compareSync(password, user.hash);*/
+
+  return user.hash === password;
 };
 
-/* 
-// Ritorna elenco pazienti 
+// Ritorna elenco pazienti
 exports.getAllPazienti = function () {
-    return new Promise((resolve, reject) => {
-        const sql = "SELECT * FROM Pazienti";
-        db.all(sql, (err, rows) => {
-            if(err)
-                reject(err);
-            else if (rows.length === 0)
-                resolve(undefined);
-            else {
-                const pazienti = rows.map((row) => createPaziente(row));
-                resolve(pazienti);
-            }
-        })
-    })
-}
+  return new Promise((resolve, reject) => {
+    const sql = "SELECT * FROM Pazienti";
+    db.all(sql, (err, rows) => {
+      if (err) reject(err);
+      else if (rows.length === 0) resolve(undefined);
+      else {
+        const pazienti = rows.map((row) => createPaziente(row));
+        resolve(pazienti);
+      }
+    });
+  });
+};
 
+
+/*
 // Dato l'ID del medico, ritorna un array di oggetti(NOME, COGNOME, DATA DI NASCITA) dei suoi pazienti 
 exports.getPazientiByMedicoID = function (mid) {
     return new Promise((resolve, reject) => {

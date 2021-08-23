@@ -1,7 +1,21 @@
 .App {
   text-align: center;
-  height: 200%;
-  background-color: rgb(189, 181, 181);
+  height: 100%;
+  background-color: lightgray
+}
+
+#root{
+  height: 100%;
+  background-color: inherit;
+}
+
+html{
+  height: 100%;
+}
+
+body{
+  height: 100%;
+  overflow-y: auto;
 }
 
 .App-logo {
@@ -17,7 +31,13 @@
 
 .root-container {
   padding: 0;
+  margin: 0;
   height: 100%;
+  background-color: inherit;
+}
+
+.custom-row{
+  background-color: inherit;
 }
 
 .jt {
@@ -27,6 +47,11 @@
 
 .jt-2 {
   height: 30vh;
+  overflow-y: scroll;
+}
+
+.jt-3 {
+  height: 60vh;
   overflow-y: scroll;
 }
 
@@ -43,7 +68,6 @@
   height: 10vh;
 }
 .signin-jumbo {
-  height: 60vh;
   border-radius: 2rem;
   align-items: center;
   background-color: #96a0ccc4;
